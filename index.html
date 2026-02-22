@@ -7,58 +7,67 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 基本設定 */
-        body { 
-            background-color: #e0e0e0; 
-            display: flex; justify-content: center; margin: 0; 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-        }
-        .mobile-wrapper {
-            background-color: #ffffff; width: 100%; max-width: 480px; min-height: 100vh;
-            box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 80px; 
-        }
-
-        /* デザインパーツ */
+        body { background-color: #e0e0e0; display: flex; justify-content: center; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+        .mobile-wrapper { background-color: #ffffff; width: 100%; max-width: 480px; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 80px; }
         .hero-section { background: linear-gradient(135deg, #bf0000 0%, #ff4b4b 100%); color: white; padding: 20px 15px; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
         
         .category-btn { 
             border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; padding: 15px 5px; 
-            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: bold; color: #444; font-size: 0.8rem; cursor: pointer;
-            transition: background-color 0.2s;
+            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: bold; color: #444; font-size: 0.8rem; cursor: pointer; transition: background-color 0.2s;
         }
         .category-btn:active { background-color: #ffe0e0; }
-        
-        .category-icon { 
-            font-size: 1.8rem; 
-            color: #bf0000; 
-            margin-bottom: 5px;
-            display: inline-block; 
-            font-family: "Font Awesome 6 Free" !important;
-            font-weight: 900 !important;
-        }
+        .category-icon { font-size: 1.8rem; color: #bf0000; margin-bottom: 5px; display: inline-block; font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
         
         .back-btn { background: none; border: none; color: #bf0000; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 5px; }
         .product-card { border: none; border-bottom: 1px solid #eee; padding: 15px 0; }
-        .compare-bar { 
-            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; 
-            background: #222; color: white; padding: 12px 20px; border-radius: 50px; 
-            display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
+        .compare-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; background: #222; color: white; padding: 12px 20px; border-radius: 50px; display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; border-radius: 0 0 20px 20px; }
 
-        /* 比較表スタイル */
+        /* === 比較表スタイル (列固定対応) === */
         .modal-dialog { margin: 0 !important; height: 100% !important; max-width: 100% !important; display: flex !important; align-items: flex-start !important; }
         .modal-content { border: none !important; border-radius: 0 !important; min-height: 100vh; }
         .modal-header { padding: 8px 15px !important; border-bottom: 1px solid #eee; }
         .modal-body { padding: 0 !important; background-color: #fff; overflow-y: auto; }
+        
         .comparison-wrapper { overflow-x: auto; white-space: nowrap; width: 100%; padding-bottom: 50px; -webkit-overflow-scrolling: touch; }
-        .comparison-wrapper table { margin-bottom: 0; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
-        .comparison-wrapper th, .comparison-wrapper td { vertical-align: top; white-space: normal; padding: 10px 8px; border: 1px solid #dee2e6; box-sizing: border-box; width: 400px; min-width: 400px; }
-        .comparison-wrapper th { background-color: #f8f9fa; color: #333; font-weight: bold; text-align: center; vertical-align: middle; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); }
-        .comparison-wrapper th:first-child, .comparison-wrapper td:first-child { width: 140px !important; min-width: 140px !important; max-width: 140px !important; position: sticky; left: 0; z-index: 15; background-color: #fffafa; box-shadow: 2px 0 2px -1px rgba(0,0,0,0.1); }
-        .comparison-wrapper td:first-child { height: 1px; padding: 0; border-right: 1px solid #ddd; position: relative; }
+        .comparison-wrapper table { margin-bottom: 0; border-collapse: separate; /* border-collapse: separate にしないとstickyの境界線が消えることがある */ border-spacing: 0; font-size: 0.85rem; table-layout: fixed; }
+        
+        /* 全セル共通 */
+        .comparison-wrapper th, .comparison-wrapper td { 
+            vertical-align: top; white-space: normal; padding: 10px 8px; border-bottom: 1px solid #dee2e6; border-right: 1px solid #dee2e6;
+            box-sizing: border-box; width: 400px; min-width: 400px; background: #fff;
+        }
+
+        /* ヘッダー行 */
+        .comparison-wrapper th { 
+            background-color: #f8f9fa; color: #333; font-weight: bold; text-align: center; vertical-align: middle; 
+            position: sticky; top: 0; z-index: 10; 
+            border-top: 1px solid #dee2e6;
+        }
+
+        /* 1列目 (商品名) - 最強の固定設定 */
+        .comparison-wrapper th:first-child, 
+        .comparison-wrapper td:first-child { 
+            width: 140px !important; min-width: 140px !important; max-width: 140px !important; 
+            position: sticky; left: 0; 
+            border-left: 1px solid #dee2e6;
+        }
+        
+        /* ヘッダーの左端（左上の角）は一番上に表示 */
+        .comparison-wrapper th:first-child { z-index: 20; }
+        /* データ行の左端はヘッダーより下だが、他のデータより上 */
+        .comparison-wrapper td:first-child { z-index: 5; background-color: #fffafa; }
+
+        /* 商品名セルの高さ制御 */
+        .comparison-wrapper td:first-child { height: 1px; padding: 0; position: relative; }
         .p-name-box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; padding: 10px 8px; box-sizing: border-box; font-size: 0.8rem; line-height: 1.4; font-weight: bold; display: flex; align-items: flex-start; white-space: normal; }
-        .comparison-wrapper th:nth-child(2), .comparison-wrapper td:nth-child(2), .comparison-wrapper th:nth-child(3), .comparison-wrapper td:nth-child(3) { width: 100px !important; min-width: 100px !important; text-align: center; }
+
+        /* 2,3,4列目: 価格, 評価, ベネフィット (幅調整) */
+        /* GASの列順: 商品名, 価格, 評価, ベネフィット... */
+        .comparison-wrapper th:nth-child(2), .comparison-wrapper td:nth-child(2) { width: 100px !important; min-width: 100px !important; text-align: center; } /* 価格 */
+        .comparison-wrapper th:nth-child(3), .comparison-wrapper td:nth-child(3) { width: 100px !important; min-width: 100px !important; text-align: center; } /* 評価 */
+        .comparison-wrapper th:nth-child(4), .comparison-wrapper td:nth-child(4) { width: 300px !important; min-width: 300px !important; background-color: #fff0f0; } /* ベネフィット(目立たせる) */
+
     </style>
 </head>
 <body>
@@ -83,12 +92,9 @@
                     </button>
                 </div>
                 <h6 id="currentCategoryTitle" class="small text-danger fw-bold mb-2" style="display:none;"></h6>
-                
                 <div id="catLoading" class="text-center py-3" style="display:none;">
-                    <div class="spinner-border text-danger spinner-border-sm" role="status"></div>
-                    <span class="small text-muted ms-2">読み込み中...</span>
+                    <div class="spinner-border text-danger spinner-border-sm" role="status"></div><span class="small text-muted ms-2">読み込み中...</span>
                 </div>
-
                 <div id="categoryContainer" class="row row-cols-3 g-2"></div>
             </div>
 
@@ -100,6 +106,7 @@
                     <option value="-reviewCount">人気順</option>
                     <option value="+itemPrice">安い順</option>
                     <option value="-itemPrice">高い順</option>
+                    <option value="-reviewAverage">評価順</option>
                 </select>
             </div>
             <div id="resultCount" class="small text-muted mb-2 text-end"></div>
@@ -140,10 +147,16 @@
         // ★★★重要: GASのURLをここに貼り付けてください★★★
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw22TkDptBgEQfhGTqfgv7z2xxHJAo3-cXXadlYprCLSVpnmSg4K7YCm-2_bl6d8s2Hkg/exec";
 
+        // 状態管理変数
         let categoryHistory = [];
         let currentItems = [];
         let compareList = [];
         let currentGenreId = 0;
+        
+        // ★検索状態の保存用（ソートに使用）
+        let lastSearchType = "";
+        let lastSearchQuery = "";
+        let lastGenreIdForSearch = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchCategories(0, "トップ");
@@ -152,59 +165,37 @@
             });
         });
 
-        // ★アイコン辞書 (カテゴリー名に含まれるキーワード => アイコンクラス)
+        // アイコン辞書
         const ICON_MAP = [
-            { key: "レディース", icon: "fa-person-dress" },
-            { key: "メンズ", icon: "fa-shirt" },
-            { key: "キッズ", icon: "fa-child" },
-            { key: "ベビー", icon: "fa-baby" },
-            { key: "インナー", icon: "fa-socks" },
-            { key: "バッグ", icon: "fa-briefcase" },
-            { key: "靴", icon: "fa-shoe-prints" },
-            { key: "腕時計", icon: "fa-clock" },
-            { key: "ジュエリー", icon: "fa-gem" },
-            { key: "食品", icon: "fa-utensils" },
-            { key: "スイーツ", icon: "fa-cake-candles" },
-            { key: "水", icon: "fa-bottle-water" },
-            { key: "酒", icon: "fa-wine-glass" },
-            { key: "インテリア", icon: "fa-couch" },
-            { key: "寝具", icon: "fa-bed" },
-            { key: "日用品", icon: "fa-pump-soap" },
-            { key: "キッチン", icon: "fa-kitchen-set" },
-            { key: "家電", icon: "fa-plug" },
-            { key: "パソコン", icon: "fa-laptop" },
-            { key: "スマホ", icon: "fa-mobile-screen" },
-            { key: "スポーツ", icon: "fa-person-running" },
-            { key: "アウトドア", icon: "fa-campground" },
-            { key: "ゴルフ", icon: "fa-golf-ball-tee" },
-            { key: "美容", icon: "fa-spray-can-sparkles" },
-            { key: "コスメ", icon: "fa-paintbrush" },
-            { key: "本", icon: "fa-book" },
-            { key: "ゲーム", icon: "fa-gamepad" },
-            { key: "おもちゃ", icon: "fa-robot" },
-            { key: "楽器", icon: "fa-guitar" },
-            { key: "車", icon: "fa-car" },
-            { key: "バイク", icon: "fa-motorcycle" },
-            { key: "ペット", icon: "fa-paw" },
-            { key: "花", icon: "fa-seedling" },
-            { key: "DIY", icon: "fa-hammer" }
+            { key: "レディース", icon: "fa-person-dress" }, { key: "メンズ", icon: "fa-shirt" },
+            { key: "キッズ", icon: "fa-child" }, { key: "ベビー", icon: "fa-baby" },
+            { key: "インナー", icon: "fa-socks" }, { key: "バッグ", icon: "fa-briefcase" },
+            { key: "靴", icon: "fa-shoe-prints" }, { key: "腕時計", icon: "fa-clock" },
+            { key: "ジュエリー", icon: "fa-gem" }, { key: "食品", icon: "fa-utensils" },
+            { key: "スイーツ", icon: "fa-cake-candles" }, { key: "水", icon: "fa-bottle-water" },
+            { key: "酒", icon: "fa-wine-glass" }, { key: "インテリア", icon: "fa-couch" },
+            { key: "寝具", icon: "fa-bed" }, { key: "日用品", icon: "fa-pump-soap" },
+            { key: "キッチン", icon: "fa-kitchen-set" }, { key: "家電", icon: "fa-plug" },
+            { key: "パソコン", icon: "fa-laptop" }, { key: "スマホ", icon: "fa-mobile-screen" },
+            { key: "スポーツ", icon: "fa-person-running" }, { key: "アウトドア", icon: "fa-campground" },
+            { key: "ゴルフ", icon: "fa-golf-ball-tee" }, { key: "美容", icon: "fa-spray-can-sparkles" },
+            { key: "コスメ", icon: "fa-paintbrush" }, { key: "本", icon: "fa-book" },
+            { key: "ゲーム", icon: "fa-gamepad" }, { key: "おもちゃ", icon: "fa-robot" },
+            { key: "楽器", icon: "fa-guitar" }, { key: "車", icon: "fa-car" },
+            { key: "バイク", icon: "fa-motorcycle" }, { key: "ペット", icon: "fa-paw" },
+            { key: "花", icon: "fa-seedling" }, { key: "DIY", icon: "fa-hammer" }
         ];
 
         function getIconForCategory(name) {
-            // マップを上から順に走査して部分一致を探す
             for (const item of ICON_MAP) {
-                if (name.includes(item.key)) {
-                    return item.icon;
-                }
+                if (name.includes(item.key)) return item.icon;
             }
-            // ヒットしない場合はデフォルトのフォルダ
             return "fa-folder-open";
         }
 
         async function fetchCategories(genreId, genreName) {
             const container = document.getElementById('categoryContainer');
             const loading = document.getElementById('catLoading');
-            
             container.innerHTML = '';
             loading.style.display = 'block';
 
@@ -216,47 +207,31 @@
                     redirect: "follow"
                 });
                 const data = await response.json();
-
                 if (data.success && data.categories.length > 0) {
                     renderCategories(data.categories);
                 } else {
                     handleCategorySearch(genreId, genreName);
                 }
-            } catch (e) {
-                console.error(e);
-                alert("カテゴリー取得に失敗しました");
-            } finally {
-                loading.style.display = 'none';
-            }
+            } catch (e) { alert("カテゴリー取得失敗"); } 
+            finally { loading.style.display = 'none'; }
         }
 
         function renderCategories(categories) {
             const container = document.getElementById('categoryContainer');
             container.innerHTML = ''; 
-
             categories.forEach(cat => {
-                const col = document.createElement('div');
-                col.className = 'col';
-                const btn = document.createElement('button');
-                btn.className = 'category-btn';
-                
-                // ★自動判定したアイコンを使用
+                const col = document.createElement('div'); col.className = 'col';
+                const btn = document.createElement('button'); btn.className = 'category-btn';
                 const iconClass = getIconForCategory(cat.name);
-                let iconHtml = `<i class="fa-solid ${iconClass} category-icon"></i>`;
-                
-                btn.innerHTML = `${iconHtml}<span>${cat.name}</span>`;
+                btn.innerHTML = `<i class="fa-solid ${iconClass} category-icon"></i><span>${cat.name}</span>`;
                 btn.onclick = function() { onCategoryClick(cat.id, cat.name); };
-                col.appendChild(btn);
-                container.appendChild(col);
+                col.appendChild(btn); container.appendChild(col);
             });
         }
 
         async function onCategoryClick(id, name) {
-            const loading = document.getElementById('catLoading');
             const container = document.getElementById('categoryContainer');
-            
             container.style.opacity = 0.5;
-            
             try {
                 const response = await fetch(GAS_API_URL, {
                     method: 'POST',
@@ -265,9 +240,7 @@
                     redirect: "follow"
                 });
                 const data = await response.json();
-
                 container.style.opacity = 1;
-
                 if (data.success && data.categories.length > 0) {
                     categoryHistory.push({ id: currentGenreId, name: document.getElementById('currentCategoryTitle').innerText });
                     currentGenreId = id;
@@ -276,11 +249,7 @@
                 } else {
                     handleCategorySearch(id, name);
                 }
-            } catch(e) {
-                console.error(e);
-                alert("エラー");
-                container.style.opacity = 1;
-            }
+            } catch(e) { alert("エラー"); container.style.opacity = 1; }
         };
 
         function goBackCategory() {
@@ -288,10 +257,8 @@
             const prevState = categoryHistory.pop();
             currentGenreId = prevState.id;
             fetchCategoriesOnly(prevState.id);
-            
-            if (categoryHistory.length === 0) {
-                updateCategoryHeader(false, "");
-            } else {
+            if (categoryHistory.length === 0) updateCategoryHeader(false, "");
+            else {
                 const prevName = categoryHistory[categoryHistory.length - 1].name;
                 updateCategoryHeader(true, prevName); 
                 document.getElementById('currentCategoryTitle').innerText = prevState.name;
@@ -302,7 +269,6 @@
             const container = document.getElementById('categoryContainer');
             container.innerHTML = '';
             document.getElementById('catLoading').style.display = 'block';
-            
             const response = await fetch(GAS_API_URL, {
                 method: 'POST',
                 body: JSON.stringify({ searchType: 'genre_fetch', genreId: id })
@@ -328,12 +294,26 @@
         function handleFreeSearch() {
             const query = document.getElementById('searchInput').value;
             if (!query) return alert("キーワードを入力してください");
+            // ★状態保存
+            lastSearchType = 'free';
+            lastSearchQuery = query;
+            lastGenreIdForSearch = null;
             executeSearch('free', query);
         }
 
         function handleCategorySearch(id, name) {
             document.getElementById('searchInput').value = ""; 
+            // ★状態保存
+            lastSearchType = 'category';
+            lastSearchQuery = "";
+            lastGenreIdForSearch = id;
             executeSearch('category', '', id);
+        }
+
+        // ★ソート変更時の処理
+        function reSort() {
+            if (!lastSearchType) return; // まだ検索していなければ何もしない
+            executeSearch(lastSearchType, lastSearchQuery, lastGenreIdForSearch);
         }
 
         async function executeSearch(type, query, categoryId = null) {
@@ -356,7 +336,7 @@
                 } else {
                     document.getElementById('resultsArea').innerHTML = `<div class="text-center py-5">見つかりませんでした。<br>${data.error || ""}</div>`;
                 }
-            } catch (e) { console.error(e); alert("通信エラー"); } 
+            } catch (e) { alert("通信エラー"); } 
             finally { showLoading(false); }
         }
 
@@ -398,11 +378,7 @@
             if (compareList.includes(index)) {
                 compareList = compareList.filter(i => i !== index);
             } else {
-                if (compareList.length >= 3) {
-                    alert("比較は3つまでです");
-                    document.getElementById(`check_${index}`).checked = false;
-                    return;
-                }
+                if (compareList.length >= 3) return alert("比較は3つまでです");
                 compareList.push(index);
             }
             updateCompareBar();
@@ -451,7 +427,6 @@
         }
 
         function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-        function reSort() {} 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

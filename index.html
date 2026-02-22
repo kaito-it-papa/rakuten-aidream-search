@@ -33,80 +33,72 @@
         .back-btn { background: none; border: none; color: #bf0000; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 5px; }
         .product-card { border: none; border-bottom: 1px solid #eee; padding: 15px 0; }
         .compare-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; background: #222; color: white; padding: 12px 20px; border-radius: 50px; display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; border-radius: 0 0 20px 20px; }
+        
+        /* ★修正: ローディングを画面中央固定に */
+        .loading-overlay { 
+            position: fixed; /* absoluteからfixedに変更 */
+            top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); 
+            z-index: 9999; 
+            display: none; 
+            justify-content: center; align-items: center; flex-direction: column; 
+        }
 
-        /* =========================================
-           ★★★ 比較表のスタイル (修正版) ★★★ 
-           ========================================= */
+        /* === 比較表スタイル === */
         .modal-dialog { margin: 0 !important; height: 100% !important; max-width: 100% !important; display: flex !important; align-items: flex-start !important; }
         .modal-content { border: none !important; border-radius: 0 !important; min-height: 100vh; }
         .modal-header { padding: 8px 15px !important; border-bottom: 1px solid #eee; }
         .modal-body { padding: 0 !important; background-color: #fff; overflow-y: auto; }
         
         .comparison-wrapper { overflow-x: auto; white-space: nowrap; width: 100%; padding-bottom: 50px; -webkit-overflow-scrolling: touch; }
-        
-        /* テーブル設定: 列固定のために separate を指定 */
-        .comparison-wrapper table { 
-            margin-bottom: 0; 
-            border-collapse: separate; /* stickyを効かせるために必須 */
-            border-spacing: 0; 
-            font-size: 0.85rem; 
-            table-layout: fixed; 
-        }
+        .comparison-wrapper table { margin-bottom: 0; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; table-layout: fixed; }
         
         /* 全セル共通 */
         .comparison-wrapper th, .comparison-wrapper td { 
-            vertical-align: top; 
-            white-space: normal; 
-            padding: 10px 8px; 
-            border-bottom: 1px solid #dee2e6; 
-            border-right: 1px solid #dee2e6;
-            box-sizing: border-box; 
-            width: 400px; 
-            min-width: 400px;
-            background-color: #fff; /* 背景色がないと透けてしまう */
+            vertical-align: top; white-space: normal; padding: 10px 8px; 
+            border-bottom: 1px solid #dee2e6; border-right: 1px solid #dee2e6;
+            box-sizing: border-box; width: 400px; min-width: 400px; background-color: #fff;
         }
 
         /* ヘッダー (上固定) */
         .comparison-wrapper th { 
             background-color: #f8f9fa; color: #333; font-weight: bold; text-align: center; vertical-align: middle; 
-            position: sticky; top: 0; 
-            z-index: 20; /* データより手前 */
-            border-top: 1px solid #dee2e6;
+            position: sticky; top: 0; z-index: 20; border-top: 1px solid #dee2e6;
         }
 
-        /* 1列目: 商品名 (左固定) */
+        /* 1列目: 商品名 (左固定・サムネ付き) */
         .comparison-wrapper th:first-child, 
         .comparison-wrapper td:first-child { 
             width: 140px !important; min-width: 140px !important; max-width: 140px !important; 
-            position: sticky; left: 0; 
-            border-left: 1px solid #dee2e6;
+            position: sticky; left: 0; border-left: 1px solid #dee2e6;
         }
         
-        /* 左上の角 (交差点) */
-        .comparison-wrapper th:first-child { 
-            z-index: 30; /* 最前面 */
-        }
-        
-        /* データの左端列 */
-        .comparison-wrapper td:first-child { 
-            z-index: 10; /* 通常データより手前 */
-            background-color: #fffafa; 
-        }
+        .comparison-wrapper th:first-child { z-index: 30; }
+        .comparison-wrapper td:first-child { z-index: 10; background-color: #fffafa; }
 
-        /* 商品名の文字数制限 (高さハックの代わりにline-clampを使用) */
+        /* 商品名セルの表示設定 */
         .p-name-box {
-            display: -webkit-box;
-            -webkit-line-clamp: 3; /* 3行まで表示 */
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            font-size: 0.8rem;
-            line-height: 1.4;
-            font-weight: bold;
-            height: auto;
+            display: flex; flex-direction: column; align-items: center; /* 縦並び・中央揃え */
+            width: 100%; height: 100%;
+        }
+        
+        /* 商品名テキスト */
+        .p-name-text {
+            display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+            font-size: 0.75rem; line-height: 1.3; font-weight: bold; color: #333; margin-bottom: 5px;
+            text-align: center;
         }
 
-        /* 2,3,4列目: 幅調整 */
+        /* サムネイル画像 */
+        .p-thumb-img {
+            width: 80px; height: 80px; object-fit: cover; border-radius: 6px; border: 1px solid #eee;
+            margin-bottom: 5px; display: block;
+        }
+        
+        /* リンク全体 */
+        .p-link { text-decoration: none; color: inherit; display: flex; flex-direction: column; align-items: center; width: 100%; }
+
+        /* 列幅調整 */
         .comparison-wrapper th:nth-child(2), .comparison-wrapper td:nth-child(2) { width: 100px !important; min-width: 100px !important; text-align: center; } /* 価格 */
         .comparison-wrapper th:nth-child(3), .comparison-wrapper td:nth-child(3) { width: 100px !important; min-width: 100px !important; text-align: center; } /* 評価 */
         .comparison-wrapper th:nth-child(4), .comparison-wrapper td:nth-child(4) { width: 300px !important; min-width: 300px !important; background-color: #fff0f0; } /* ベネフィット */
@@ -444,22 +436,46 @@
                     const rows = doc.querySelectorAll('tr');
 
                     rows.forEach((row, index) => {
-                        if(index === 0) return; 
+                        if(index === 0) return; // ヘッダー無視
+                        
+                        // ★修正: 実際の商品のindexを取得 (行番号 - 1)
+                        const itemIndex = index - 1;
+                        if (itemIndex >= targetItems.length) return; // 安全策
+                        
+                        const item = targetItems[itemIndex];
                         const firstCell = row.querySelector('td');
-                        if (firstCell) {
-                            const content = firstCell.innerHTML;
-                            firstCell.innerHTML = `<div class="p-name-box">${content}</div>`;
+                        
+                        if (firstCell && item) {
+                            // 商品名を保持しつつ、サムネイルとリンクで包む
+                            const itemName = firstCell.innerHTML;
+                            firstCell.innerHTML = `
+                                <div class="p-name-box">
+                                    <a href="${item.url}" target="_blank" class="p-link">
+                                        <img src="${item.imageUrl}" class="p-thumb-img" alt="商品画像">
+                                        <span class="p-name-text">${itemName}</span>
+                                    </a>
+                                </div>`;
                         }
                     });
 
                     document.getElementById('compareResultBody').innerHTML = doc.body.innerHTML; 
-                    new bootstrap.Modal(document.getElementById('compareModal')).show();
+                    
+                    const modalEl = document.getElementById('compareModal');
+                    const modalBody = modalEl.querySelector('.modal-body');
+                    
+                    new bootstrap.Modal(modalEl).show();
+                    
+                    // ★修正: モーダル表示時にスクロール位置をリセット
+                    // 少し待たないとDOM描画が完了していない場合があるためsetTimeout
+                    setTimeout(() => {
+                        modalBody.scrollTop = 0;
+                        modalBody.scrollLeft = 0;
+                    }, 100);
                 }
-            } catch (e) { alert("エラー発生"); } finally { showLoading(false); }
+            } catch (e) { console.error(e); alert("エラー発生"); } finally { showLoading(false); }
         }
 
         function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
-        function reSort() {} 
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

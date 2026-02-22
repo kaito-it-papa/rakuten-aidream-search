@@ -8,21 +8,42 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* 基本設定 */
-        body { background-color: #e0e0e0; display: flex; justify-content: center; margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        .mobile-wrapper { background-color: #ffffff; width: 100%; max-width: 480px; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 80px; }
+        body { 
+            background-color: #e0e0e0; 
+            display: flex; justify-content: center; margin: 0; 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+        .mobile-wrapper {
+            background-color: #ffffff; width: 100%; max-width: 480px; min-height: 100vh;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1); position: relative; padding-bottom: 80px; 
+        }
+
+        /* デザインパーツ */
         .hero-section { background: linear-gradient(135deg, #bf0000 0%, #ff4b4b 100%); color: white; padding: 20px 15px; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
         
         .category-btn { 
-            border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; padding: 15px 10px; 
-            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: bold; color: #444; font-size: 0.85rem; cursor: pointer;
+            border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; padding: 15px 5px; 
+            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: bold; color: #444; font-size: 0.8rem; cursor: pointer;
+            transition: background-color 0.2s;
         }
+        .category-btn:active { background-color: #ffe0e0; }
         
-        /* アイコンはデフォルトのフォルダアイコンを使用するためCSSはシンプルに */
-        .category-icon { font-size: 1.8rem; color: #bf0000; margin-bottom: 5px; display: inline-block; }
+        .category-icon { 
+            font-size: 1.8rem; 
+            color: #bf0000; 
+            margin-bottom: 5px;
+            display: inline-block; 
+            font-family: "Font Awesome 6 Free" !important;
+            font-weight: 900 !important;
+        }
         
         .back-btn { background: none; border: none; color: #bf0000; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 5px; }
         .product-card { border: none; border-bottom: 1px solid #eee; padding: 15px 0; }
-        .compare-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; background: #222; color: white; padding: 12px 20px; border-radius: 50px; display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .compare-bar { 
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; 
+            background: #222; color: white; padding: 12px 20px; border-radius: 50px; 
+            display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
         .loading-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; flex-direction: column; border-radius: 0 0 20px 20px; }
 
         /* 比較表スタイル */
@@ -34,7 +55,6 @@
         .comparison-wrapper table { margin-bottom: 0; border-collapse: collapse; font-size: 0.85rem; table-layout: fixed; }
         .comparison-wrapper th, .comparison-wrapper td { vertical-align: top; white-space: normal; padding: 10px 8px; border: 1px solid #dee2e6; box-sizing: border-box; width: 400px; min-width: 400px; }
         .comparison-wrapper th { background-color: #f8f9fa; color: #333; font-weight: bold; text-align: center; vertical-align: middle; position: sticky; top: 0; z-index: 10; box-shadow: 0 2px 2px -1px rgba(0, 0, 0, 0.1); }
-        
         .comparison-wrapper th:first-child, .comparison-wrapper td:first-child { width: 140px !important; min-width: 140px !important; max-width: 140px !important; position: sticky; left: 0; z-index: 15; background-color: #fffafa; box-shadow: 2px 0 2px -1px rgba(0,0,0,0.1); }
         .comparison-wrapper td:first-child { height: 1px; padding: 0; border-right: 1px solid #ddd; position: relative; }
         .p-name-box { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; padding: 10px 8px; box-sizing: border-box; font-size: 0.8rem; line-height: 1.4; font-weight: bold; display: flex; align-items: flex-start; white-space: normal; }
@@ -120,12 +140,11 @@
         // ★★★重要: GASのURLをここに貼り付けてください★★★
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw22TkDptBgEQfhGTqfgv7z2xxHJAo3-cXXadlYprCLSVpnmSg4K7YCm-2_bl6d8s2Hkg/exec";
 
-        // ★カテゴリーの履歴（戻るボタン用）
         let categoryHistory = [];
         let currentItems = [];
         let compareList = [];
+        let currentGenreId = 0;
 
-        // 初期化：トップカテゴリー(ID=0)を取得
         document.addEventListener('DOMContentLoaded', () => {
             fetchCategories(0, "トップ");
             document.getElementById('searchInput').addEventListener('keypress', function (e) {
@@ -133,7 +152,55 @@
             });
         });
 
-        // ★動的カテゴリー取得
+        // ★アイコン辞書 (カテゴリー名に含まれるキーワード => アイコンクラス)
+        const ICON_MAP = [
+            { key: "レディース", icon: "fa-person-dress" },
+            { key: "メンズ", icon: "fa-shirt" },
+            { key: "キッズ", icon: "fa-child" },
+            { key: "ベビー", icon: "fa-baby" },
+            { key: "インナー", icon: "fa-socks" },
+            { key: "バッグ", icon: "fa-briefcase" },
+            { key: "靴", icon: "fa-shoe-prints" },
+            { key: "腕時計", icon: "fa-clock" },
+            { key: "ジュエリー", icon: "fa-gem" },
+            { key: "食品", icon: "fa-utensils" },
+            { key: "スイーツ", icon: "fa-cake-candles" },
+            { key: "水", icon: "fa-bottle-water" },
+            { key: "酒", icon: "fa-wine-glass" },
+            { key: "インテリア", icon: "fa-couch" },
+            { key: "寝具", icon: "fa-bed" },
+            { key: "日用品", icon: "fa-pump-soap" },
+            { key: "キッチン", icon: "fa-kitchen-set" },
+            { key: "家電", icon: "fa-plug" },
+            { key: "パソコン", icon: "fa-laptop" },
+            { key: "スマホ", icon: "fa-mobile-screen" },
+            { key: "スポーツ", icon: "fa-person-running" },
+            { key: "アウトドア", icon: "fa-campground" },
+            { key: "ゴルフ", icon: "fa-golf-ball-tee" },
+            { key: "美容", icon: "fa-spray-can-sparkles" },
+            { key: "コスメ", icon: "fa-paintbrush" },
+            { key: "本", icon: "fa-book" },
+            { key: "ゲーム", icon: "fa-gamepad" },
+            { key: "おもちゃ", icon: "fa-robot" },
+            { key: "楽器", icon: "fa-guitar" },
+            { key: "車", icon: "fa-car" },
+            { key: "バイク", icon: "fa-motorcycle" },
+            { key: "ペット", icon: "fa-paw" },
+            { key: "花", icon: "fa-seedling" },
+            { key: "DIY", icon: "fa-hammer" }
+        ];
+
+        function getIconForCategory(name) {
+            // マップを上から順に走査して部分一致を探す
+            for (const item of ICON_MAP) {
+                if (name.includes(item.key)) {
+                    return item.icon;
+                }
+            }
+            // ヒットしない場合はデフォルトのフォルダ
+            return "fa-folder-open";
+        }
+
         async function fetchCategories(genreId, genreName) {
             const container = document.getElementById('categoryContainer');
             const loading = document.getElementById('catLoading');
@@ -152,10 +219,7 @@
 
                 if (data.success && data.categories.length > 0) {
                     renderCategories(data.categories);
-                    // 履歴に追加 (ただし戻るボタンで呼ばれたときは追加しない処理が必要だが簡易化)
-                    // ※今回はシンプルに「下に進むときだけ履歴追加」にするため、onCategoryClickで制御
                 } else {
-                    // 子カテゴリがない場合は、そのジャンルで商品検索を実行
                     handleCategorySearch(genreId, genreName);
                 }
             } catch (e) {
@@ -166,7 +230,6 @@
             }
         }
 
-        // カテゴリー描画
         function renderCategories(categories) {
             const container = document.getElementById('categoryContainer');
             container.innerHTML = ''; 
@@ -177,8 +240,9 @@
                 const btn = document.createElement('button');
                 btn.className = 'category-btn';
                 
-                // 動的データなのでアイコンは一律フォルダアイコンにする（またはAPIから取得できれば使う）
-                let iconHtml = `<i class="fa-solid fa-folder-open category-icon"></i>`;
+                // ★自動判定したアイコンを使用
+                const iconClass = getIconForCategory(cat.name);
+                let iconHtml = `<i class="fa-solid ${iconClass} category-icon"></i>`;
                 
                 btn.innerHTML = `${iconHtml}<span>${cat.name}</span>`;
                 btn.onclick = function() { onCategoryClick(cat.id, cat.name); };
@@ -187,46 +251,12 @@
             });
         }
 
-        function onCategoryClick(id, name) {
-            // 現在の表示状態を履歴に保存して、次の階層へ
-            // （簡易実装: 直前のIDだけ保存）
-            // 実際は、現在表示されているリストではなく「親ID」を保存するのが確実
-            // 今回はシンプルに、クリックした瞬間に「今の親ID」をスタックするのではなく
-            // fetchCategories内で履歴管理する
-            
-            // 履歴にプッシュ（現在のタイトルとID）
-            // 注: ここでは「次に進む」ので、進む前の状態を保存したいが、
-            // 動的fetchなので「親ID」さえわかれば戻れる。
-            // しかしAPI仕様上「親ID」を取得するのは面倒なので、
-            // 独自のスタックで管理する。
-            
-            // 3. 次の階層を取得（商品検索になるかもしれないので、まずはfetch）
-            fetchCategories(id, name).then(() => {
-                // 成功し、かつ画面が切り替わった場合のみ履歴追加したいが
-                // ここでは簡易的に「クリック＝進む」として履歴追加
-                // ただし、fetchCategoriesの中で「子なし＝検索」と分岐しているため
-                // 検索になった場合は履歴に追加したくない。
-                // 修正：fetchCategoriesの結果を見て判断するのがベストだが、
-                // UI的には「クリックした」事実を保存。
-                categoryHistory.push({ id: id, name: name }); // これは「今クリックしたもの」
-                updateCategoryHeader(true, name);
-            });
-        }
-        
-        // fetchCategoriesを修正して、クリック時の挙動と分離する
-        // 上記のfetchCategoriesは「表示」のみ担当させ、
-        // クリックハンドラでロジックを組む
-        
-        // ★修正版 onCategoryClick
-        // 上書き定義
-        onCategoryClick = async function(id, name) {
+        async function onCategoryClick(id, name) {
             const loading = document.getElementById('catLoading');
             const container = document.getElementById('categoryContainer');
             
-            // UI反応
             container.style.opacity = 0.5;
             
-            // GASに問い合わせ
             try {
                 const response = await fetch(GAS_API_URL, {
                     method: 'POST',
@@ -239,21 +269,11 @@
                 container.style.opacity = 1;
 
                 if (data.success && data.categories.length > 0) {
-                    // 子ジャンルあり -> 階層を下る
-                    // 現在の情報を履歴に保存（戻る用：実際は「今のリストの親」が必要だが、
-                    // 簡易的に「今のリストを再表示するためのID」を保存すべき）
-                    // 履歴のロジック： history[0] = {id:0, name:トップ}, history[1] = {id:100, name:インテリア}...
-                    
-                    // 現在表示中のID（直前のfetchで使ったID）を保存する必要がある。
-                    // グローバル変数で currentGenreId を持たせる。
                     categoryHistory.push({ id: currentGenreId, name: document.getElementById('currentCategoryTitle').innerText });
-                    
-                    currentGenreId = id; // 新しいID
+                    currentGenreId = id;
                     updateCategoryHeader(true, name);
                     renderCategories(data.categories);
-                    
                 } else {
-                    // 子ジャンルなし -> 商品検索実行
                     handleCategorySearch(id, name);
                 }
             } catch(e) {
@@ -263,32 +283,21 @@
             }
         };
 
-        // 現在表示中のジャンルID（初期は0）
-        let currentGenreId = 0;
-
         function goBackCategory() {
             if (categoryHistory.length === 0) return;
-            
             const prevState = categoryHistory.pop();
-            currentGenreId = prevState.id; // IDを戻す
-            
-            // そのIDで再取得して表示
+            currentGenreId = prevState.id;
             fetchCategoriesOnly(prevState.id);
             
             if (categoryHistory.length === 0) {
                 updateCategoryHeader(false, "");
             } else {
-                // 一つ前の名前（履歴の末尾）
                 const prevName = categoryHistory[categoryHistory.length - 1].name;
                 updateCategoryHeader(true, prevName); 
-                // タイトル表示が少しずれるが、簡易実装として許容
-                // 正確には prevState.name は「戻り先の親の名前」ではないため調整が必要だが
-                // 今回は「戻る」機能の動作優先。
                 document.getElementById('currentCategoryTitle').innerText = prevState.name;
             }
         }
         
-        // 表示専用
         async function fetchCategoriesOnly(id) {
             const container = document.getElementById('categoryContainer');
             container.innerHTML = '';
@@ -316,9 +325,6 @@
             }
         }
 
-        // ==========================================
-        // 検索機能 (既存)
-        // ==========================================
         function handleFreeSearch() {
             const query = document.getElementById('searchInput').value;
             if (!query) return alert("キーワードを入力してください");
@@ -343,7 +349,6 @@
                     redirect: "follow" 
                 });
                 const data = await response.json();
-                
                 if (data.success) {
                     currentItems = data.items;
                     renderResults(data.items);

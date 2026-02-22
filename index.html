@@ -72,8 +72,25 @@
         .modal-dialog { margin: 0 !important; height: 100% !important; max-width: 100% !important; display: flex !important; align-items: flex-start !important; }
         .modal-content { border: none !important; border-radius: 0 !important; min-height: 100vh; }
         .modal-header { padding: 8px 15px !important; border-bottom: 1px solid #eee; height: 50px; flex-shrink: 0; }
-        .modal-body { padding: 0 !important; background-color: #fff; overflow: hidden; display: flex; flex-direction: column; height: calc(100vh - 50px); }
         
+        /* Modal Body: Flexboxで縦並びにする */
+        .modal-body { 
+            padding: 0 !important; 
+            background-color: #fff; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column; 
+            height: calc(100vh - 50px); 
+        }
+        
+        /* ★追加: スクロール誘導のヒントバー */
+        .scroll-hint {
+            background-color: #fff3cd; color: #856404; font-size: 0.75rem; 
+            text-align: center; padding: 8px; border-bottom: 1px solid #ffeeba;
+            flex-shrink: 0; /* サイズ固定 */
+            font-weight: bold;
+        }
+
         .comparison-wrapper { overflow: auto; width: 100%; height: 100%; padding-bottom: 50px; -webkit-overflow-scrolling: touch; }
         .comparison-wrapper table { margin-bottom: 0; border-collapse: separate; border-spacing: 0; font-size: 0.85rem; table-layout: fixed; }
         
@@ -214,6 +231,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
+                    <div class="scroll-hint">
+                        <i class="fas fa-arrow-down"></i> 比較結果は下にスクロール ▼▼ <i class="fas fa-arrow-down"></i>
+                    </div>
                     <div id="compareResultBody" class="comparison-wrapper"></div>
                 </div>
             </div>
@@ -535,6 +555,7 @@
 
                     rows.forEach((row, index) => {
                         if(index === 0) return; 
+                        
                         const itemIndex = index - 1;
                         if (itemIndex >= targetItems.length) return;
                         

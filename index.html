@@ -369,7 +369,7 @@
             container.innerHTML = ''; 
             const isTopLevel = (currentGenreId === 0);
 
-            // ★追加: 「すべて見る」ボタン (トップページ以外)
+            // 「すべて見る」ボタン (トップページ以外)
             if (!isTopLevel) {
                 const currentName = document.getElementById('currentCategoryTitle').innerText;
                 const allCol = document.createElement('div'); 
@@ -593,14 +593,23 @@
                     badgeHtml = `<span class="badge bg-secondary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size:0.6rem; z-index:5;">中古</span>`;
                 }
 
+                // ★新バッジ: 送料無料・ポイント・あす楽
+                let postageBadge = item.postageFlag === 0 ? '<span class="badge bg-danger ms-1" style="font-size:0.7rem;">送料無料</span>' : '';
+                let pointBadge = item.pointRate > 1 ? `<span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;">P×${item.pointRate}</span>` : '';
+                let asurakuBadge = item.asurakuFlag === 1 ? '<span class="badge bg-primary ms-1" style="font-size:0.7rem;">明日楽</span>' : '';
+
                 const html = `
                     <div class="product-card d-flex gap-3 align-items-start">
                         <div style="width: 100px; flex-shrink:0; position:relative;">
-                            ${badgeHtml} <img src="${item.imageUrl}" class="img-fluid rounded" alt="${item.name}">
+                            ${badgeHtml}
+                            <img src="${item.imageUrl}" class="img-fluid rounded" alt="${item.name}">
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-1 text-truncate-2" style="font-size:0.9rem; line-height:1.4; height: 2.8em; overflow:hidden;">${item.name}</h6>
                             <div class="price-tag mb-1">¥${item.price.toLocaleString()}</div>
+                            <div class="mb-2">
+                                ${postageBadge} ${pointBadge} ${asurakuBadge}
+                            </div>
                             <div class="small text-warning mb-2">★ ${item.reviewAverage} <span class="text-muted">(${item.reviewCount})</span></div>
                             
                             <div class="d-flex justify-content-between align-items-center mt-2">

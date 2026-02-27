@@ -54,11 +54,11 @@
         }
         
         .category-btn { 
-            border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; padding: 15px 5px; 
-            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-weight: bold; color: #444; font-size: 0.8rem; cursor: pointer; transition: background-color 0.2s;
+            border: 1px solid #eee; background: #f8f9fa; border-radius: 12px; padding: 10px 5px; 
+            text-align: center; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; font-weight: bold; color: #444; font-size: 0.75rem; cursor: pointer; transition: background-color 0.2s;
         }
         .category-btn:active { background-color: #ffe0e0; }
-        .category-icon { font-size: 1.8rem; color: #bf0000; margin-bottom: 5px; display: inline-block; font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
+        .category-icon { font-size: 1.5rem; color: #bf0000; margin-bottom: 3px; display: inline-block; font-family: "Font Awesome 6 Free" !important; font-weight: 900 !important; }
         
         .back-btn { background: none; border: none; color: #bf0000; font-weight: bold; font-size: 0.9rem; margin-bottom: 10px; display: inline-flex; align-items: center; gap: 5px; }
         .product-card { border: none; border-bottom: 1px solid #eee; padding: 15px 0; }
@@ -358,7 +358,8 @@
                 if (data.success && data.categories.length > 0) {
                     renderCategories(data.categories);
                 } else {
-                    handleCategorySearch(genreId, genreName);
+                    // 子カテゴリがない場合はコンテナを隠す
+                    container.innerHTML = '<div class="col-12 text-center small text-muted">サブカテゴリはありません</div>';
                 }
             } catch (e) { alert("カテゴリー取得失敗"); } 
             finally { loading.style.display = 'none'; }
@@ -368,24 +369,6 @@
             const container = document.getElementById('categoryContainer');
             container.innerHTML = ''; 
             const isTopLevel = (currentGenreId === 0);
-
-            // 「すべて見る」ボタン (トップページ以外)
-            if (!isTopLevel) {
-                const currentName = document.getElementById('currentCategoryTitle').innerText;
-                const allCol = document.createElement('div'); 
-                allCol.className = 'col';
-                
-                const allBtn = document.createElement('button'); 
-                allBtn.className = 'category-btn';
-                allBtn.style.backgroundColor = '#fff0f0'; 
-                allBtn.style.borderColor = '#ffcccc';
-                
-                allBtn.innerHTML = `<i class="fas fa-search text-danger" style="font-size:1.5rem; margin-bottom:5px;"></i><span class="text-danger fw-bold">「${currentName}」<br>すべて見る</span>`;
-                allBtn.onclick = function() { handleCategorySearch(currentGenreId, currentName); };
-                
-                allCol.appendChild(allBtn); 
-                container.appendChild(allCol);
-            }
 
             categories.forEach(cat => {
                 if (cat.id === currentGenreId) return;
@@ -403,29 +386,18 @@
             });
         }
 
+        // ★★★重要: カテゴリクリック時の挙動修正（ループ防止）★★★
         async function onCategoryClick(id, name) {
-            const container = document.getElementById('categoryContainer');
-            clearResults(); 
-            container.style.opacity = 0.5;
-            
-            try {
-                const response = await fetch(GAS_API_URL, {
-                    method: 'POST',
-                    headers: { "Content-Type": "text/plain;charset=utf-8" },
-                    body: JSON.stringify({ searchType: 'genre_fetch', genreId: id }),
-                    redirect: "follow"
-                });
-                const data = await response.json();
-                container.style.opacity = 1;
-                if (data.success && data.categories.length > 0) {
-                    categoryHistory.push({ id: currentGenreId, name: document.getElementById('currentCategoryTitle').innerText });
-                    currentGenreId = id;
-                    updateCategoryHeader(true, name);
-                    renderCategories(data.categories);
-                } else {
-                    handleCategorySearch(id, name);
-                }
-            } catch(e) { alert("エラー"); container.style.opacity = 1; }
+            // 1. カテゴリID更新
+            categoryHistory.push({ id: currentGenreId, name: document.getElementById('currentCategoryTitle').innerText });
+            currentGenreId = id;
+            updateCategoryHeader(true, name);
+
+            // 2. サブカテゴリを読み込み（もしあれば上に表示）
+            fetchCategories(id, name);
+
+            // 3. ★同時にそのカテゴリの商品も検索して下に表示（これがループ防止の鍵）
+            handleCategorySearch(id, name); 
         };
 
         function clearResults() {
@@ -445,16 +417,24 @@
             if (categoryHistory.length === 0) return;
             const prevState = categoryHistory.pop();
             currentGenreId = prevState.id;
-            fetchCategoriesOnly(prevState.id);
-            if (categoryHistory.length === 0) updateCategoryHeader(false, "");
-            else {
-                const prevName = categoryHistory[categoryHistory.length - 1].name;
+            
+            // 戻るボタンを押した時も、カテゴリ表示と商品検索を同時に行う
+            fetchCategories(prevState.id);
+            
+            // もしトップに戻ったなら商品リストはクリア、それ以外ならそのカテゴリの商品を表示
+            if (prevState.id === 0) {
+                clearResults();
+                updateCategoryHeader(false, "");
+            } else {
+                const prevName = categoryHistory.length > 0 ? categoryHistory[categoryHistory.length - 1].name : "トップ";
                 updateCategoryHeader(true, prevName); 
                 document.getElementById('currentCategoryTitle').innerText = prevState.name;
+                handleCategorySearch(prevState.id, prevState.name);
             }
         }
         
         async function fetchCategoriesOnly(id) {
+            // goBackで使用する簡易版
             const container = document.getElementById('categoryContainer');
             container.innerHTML = '';
             document.getElementById('catLoading').style.display = 'block';
@@ -490,7 +470,9 @@
         }
 
         function handleCategorySearch(id, name) {
+            // 検索窓はクリアしない
             document.getElementById('searchInput').value = ""; 
+            
             lastSearchType = 'category'; lastSearchQuery = ""; lastGenreIdForSearch = id; lastAnalyzedParams = null;
             currentPage = 1;
             executeSearch('category', '', id);
@@ -544,7 +526,7 @@
                         renderResults(data.items, false);
                         document.getElementById('resultCount').innerText = `${data.count}件ヒット`;
                         const resArea = document.getElementById('resultsArea');
-                        resArea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        // カテゴリ選択時はスクロールしない
                     }
                     
                     const loadMoreArea = document.getElementById('loadMoreArea');
@@ -584,16 +566,17 @@
             items.forEach((item, index) => {
                 const realIndex = isAppend ? (currentItems.length - items.length + index) : index;
                 
+                // アフィリエイトリンク生成
                 const rawSearchUrl = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(item.name)}/?s=2`;
                 const searchCheapUrl = `https://hb.afl.rakuten.co.jp/hgc/${MY_AFFILIATE_ID}/?pc=${encodeURIComponent(rawSearchUrl)}`;
 
-                // ★中古バッジの判定
+                // 中古バッジ判定
                 let badgeHtml = '';
                 if (item.name.includes('中古') || item.description.includes('中古')) {
                     badgeHtml = `<span class="badge bg-secondary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size:0.6rem; z-index:5;">中古</span>`;
                 }
 
-                // ★新バッジ: 送料無料・ポイント・あす楽
+                // 新バッジ: 送料無料・ポイント・あす楽
                 let postageBadge = item.postageFlag === 0 ? '<span class="badge bg-danger ms-1" style="font-size:0.7rem;">送料無料</span>' : '';
                 let pointBadge = item.pointRate > 1 ? `<span class="badge bg-warning text-dark ms-1" style="font-size:0.7rem;">P×${item.pointRate}</span>` : '';
                 let asurakuBadge = item.asurakuFlag === 1 ? '<span class="badge bg-primary ms-1" style="font-size:0.7rem;">明日楽</span>' : '';

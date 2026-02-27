@@ -36,8 +36,16 @@
         
         .hero-section h1 { padding-right: 40px; padding-left: 40px; margin-top: 5px; }
 
-        .pr-mark { font-size: 0.6rem; opacity: 0.8; text-align: left; margin: 0; margin-bottom: 5px; }
+        /* PR表記 (左寄せ) */
+        .pr-mark {
+            font-size: 0.6rem;
+            opacity: 0.8;
+            text-align: left;
+            margin: 0;
+            margin-bottom: 5px;
+        }
 
+        /* TOPに戻るボタン */
         .top-reset-btn {
             position: absolute; top: 15px; right: 15px;
             background: rgba(255,255,255,0.25); border: none;
@@ -67,6 +75,7 @@
             font-weight: bold; font-size: 1rem; color: #444; margin-top: 15px;
             min-height: 1.5em; text-align: center;
         }
+        /* 点滅アニメーション */
         .blink { animation: blinker 1.5s linear infinite; }
         @keyframes blinker { 50% { opacity: 0.5; } }
 
@@ -159,6 +168,7 @@
         .app-footer { background-color: #f8f9fa; border-top: 1px solid #dee2e6; color: #6c757d; font-size: 0.7rem; padding: 20px 10px; margin-top: 30px; text-align: center; }
         .app-footer a { color: #bf0000; text-decoration: none; }
         
+        /* モーションウィジェット調整 */
         .rakuten-widget-wrapper {
             margin: 0 auto 20px auto; 
             max-width: 100%;
@@ -299,6 +309,9 @@
     <script>
         // ★★★重要: GASのURLをここに貼り付けてください★★★
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw22TkDptBgEQfhGTqfgv7z2xxHJAo3-cXXadlYprCLSVpnmSg4K7YCm-2_bl6d8s2Hkg/exec";
+
+        // ★アフィリエイトID設定
+        const MY_AFFILIATE_ID = "4f9f7acd.de591d9b.4f9f7ace.7779f3b0";
 
         let categoryHistory = [];
         let currentItems = [];
@@ -547,7 +560,7 @@
                 container.innerHTML = '';
                 compareList = []; updateCompareBar();
                 
-                // ★追加: 検索結果の上部に注釈を入れる（重複排除の説明）
+                // ★注釈エリア
                 container.insertAdjacentHTML('beforeend', `
                     <div class="alert alert-light border small text-muted py-2 mb-3">
                         <i class="fas fa-info-circle me-1"></i> 
@@ -560,9 +573,9 @@
             items.forEach((item, index) => {
                 const realIndex = isAppend ? (currentItems.length - items.length + index) : index;
                 
-                // ★追加: 楽天市場で「この商品名」を「価格が安い順」で検索するURL
-                // s=2 は「価格が安い順」のパラメータ
-                const searchCheapUrl = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(item.name)}/?s=2`;
+                // ★アフィリエイトリンク生成
+                const rawSearchUrl = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(item.name)}/?s=2`;
+                const searchCheapUrl = `https://hb.afl.rakuten.co.jp/hgc/${MY_AFFILIATE_ID}/?pc=${encodeURIComponent(rawSearchUrl)}`;
 
                 const html = `
                     <div class="product-card d-flex gap-3 align-items-start">
@@ -662,29 +675,23 @@
             } catch (e) { alert("エラー発生"); } finally { showLoading(false); }
         }
 
-        // ★追加: 比較表を画像としてダウンロードする機能
+        // 画像保存機能
         function downloadComparisonImage() {
-            // 撮影対象（比較表のエリア）
             const target = document.getElementById('compareResultBody');
-            
-            // 撮影中はユーザーに「撮影中...」と伝えるためボタンを変える
             const btn = event.currentTarget;
             const originalText = btn.innerHTML;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> 生成中...';
 
             html2canvas(target, {
-                useCORS: true, // 外部画像（楽天商品画像）を許可する設定
-                scale: 2,      // 高画質にする
-                backgroundColor: "#ffffff", // 背景を白にする
+                useCORS: true, 
+                scale: 2,      
+                backgroundColor: "#ffffff",
                 logging: false
             }).then(canvas => {
-                // 画像リンクを生成してクリックさせる
                 const link = document.createElement('a');
                 link.download = 'rakuten_hikaku.png';
                 link.href = canvas.toDataURL('image/png');
                 link.click();
-                
-                // ボタンを戻す
                 btn.innerHTML = originalText;
             }).catch(err => {
                 alert("画像の保存に失敗しました。スマホのスクリーンショット機能をご利用ください。");

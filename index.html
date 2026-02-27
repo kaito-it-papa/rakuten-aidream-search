@@ -36,7 +36,6 @@
         
         .hero-section h1 { padding-right: 40px; padding-left: 40px; margin-top: 5px; }
 
-        /* PR表記 (左寄せ) */
         .pr-mark {
             font-size: 0.6rem;
             opacity: 0.8;
@@ -65,7 +64,7 @@
         .product-card { border: none; border-bottom: 1px solid #eee; padding: 15px 0; }
         .compare-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 440px; background: #222; color: white; padding: 12px 20px; border-radius: 50px; display: none; align-items: center; justify-content: space-between; z-index: 1000; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
         
-        /* ローディングオーバーレイ（実況対応版） */
+        /* ローディングオーバーレイ */
         .loading-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(255,255,255,0.98); z-index: 9999; 
@@ -504,7 +503,7 @@
         }
 
         async function executeSearch(type, query, categoryId = null, isAppend = false) {
-            if (!isAppend) showLoading(true);
+            if (!isAppend) showLoading(true, 'search'); // ★修正：検索モード
             else {
                 document.querySelector('.load-more-btn').innerHTML = '<span class="spinner-border spinner-border-sm"></span> 読込中...';
             }
@@ -624,7 +623,7 @@
 
         async function startComparison() {
             if (compareList.length < 2) return alert("2つ以上選んでください");
-            showLoading(true);
+            showLoading(true, 'compare'); // ★修正：比較モード
             const targetItems = compareList.map(idx => currentItems[idx]);
             const params = { searchType: 'compare', items: targetItems };
 
@@ -675,7 +674,6 @@
             } catch (e) { alert("エラー発生"); } finally { showLoading(false); }
         }
 
-        // 画像保存機能
         function downloadComparisonImage() {
             const target = document.getElementById('compareResultBody');
             const btn = event.currentTarget;
@@ -700,30 +698,47 @@
             });
         }
 
-        // 実況ローディング機能
+        // ★実況ローディング機能 (モード対応)
         let loadingInterval;
-        const loadingMessages = [
-            "AIが検索意図を解析中...",     // 最初の3秒: Gemini
-            "最適なキーワードを選定中...", // 次の3秒: JSON
-            "楽天市場から商品を探しています...", // API
-            "重複商品をAIが除外中...",     // クリーニング
-            "リストを整理しています..."      // 表示
-        ];
+        
+        // 2種類のメッセージセット
+        const loadingMessages = {
+            search: [
+                "AIが検索意図を解析中...",
+                "最適なキーワードを選定中...",
+                "楽天市場から商品を探しています...",
+                "重複商品をAIが除外中...",
+                "リストを整理しています..."
+            ],
+            compare: [
+                "AIが比較表を作成中です...",
+                "スペックやレビューを分析中...",
+                "5秒～10秒ほどお待ちください...",
+                "比較表を作成中です...",
+                "まもなく完成します..."
+            ]
+        };
 
-        function showLoading(show) { 
+        function showLoading(show, mode = 'search') { 
             const overlay = document.getElementById('loading');
             const msgArea = document.getElementById('loadingText'); 
 
             if (show) {
                 overlay.style.display = 'flex';
                 let step = 0;
-                msgArea.innerText = loadingMessages[0];
+                
+                // モードに応じたメッセージセットを選択
+                const messages = loadingMessages[mode] || loadingMessages['search'];
+                
+                msgArea.innerText = messages[0];
                 
                 loadingInterval = setInterval(() => {
                     step++;
-                    if (step < loadingMessages.length) {
-                        msgArea.innerText = loadingMessages[step];
-                    }
+                    // 最後のメッセージまで行ったらループさせるか、最後で止める
+                    // ここではループさせています
+                    if (step >= messages.length) step = 0;
+                    
+                    msgArea.innerText = messages[step];
                 }, 3000);
             } else {
                 overlay.style.display = 'none';

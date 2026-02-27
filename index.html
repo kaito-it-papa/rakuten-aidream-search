@@ -310,6 +310,7 @@
         // ★★★重要: GASのURLをここに貼り付けてください★★★
         const GAS_API_URL = "https://script.google.com/macros/s/AKfycbw22TkDptBgEQfhGTqfgv7z2xxHJAo3-cXXadlYprCLSVpnmSg4K7YCm-2_bl6d8s2Hkg/exec";
 
+        // ★アフィリエイトID
         const MY_AFFILIATE_ID = "4f9f7acd.de591d9b.4f9f7ace.7779f3b0";
 
         let categoryHistory = [];
@@ -370,7 +371,7 @@
             container.innerHTML = '';
             loading.style.display = 'block';
             
-            resetUsedToggle(); // ★修正: カテゴリ読み込み時にリセット
+            resetUsedToggle(); // カテゴリ読み込み時にリセット
 
             try {
                 const response = await fetch(GAS_API_URL, {
@@ -413,7 +414,7 @@
             clearResults(); 
             container.style.opacity = 0.5;
             
-            resetUsedToggle(); // ★修正: カテゴリクリック時にリセット
+            resetUsedToggle(); // カテゴリクリック時にリセット
             
             try {
                 const response = await fetch(GAS_API_URL, {
@@ -491,7 +492,7 @@
             const query = document.getElementById('searchInput').value;
             if (!query) return alert("キーワードを入力してください");
             
-            resetUsedToggle(); // ★修正: キーワード検索時にリセット
+            resetUsedToggle(); // キーワード検索時にリセット
 
             lastSearchType = 'free'; lastSearchQuery = query; lastGenreIdForSearch = null; lastAnalyzedParams = null;
             currentPage = 1;
@@ -523,6 +524,7 @@
             }
 
             const sort = document.getElementById('sortSelect').value;
+            // 中古スイッチの値を取得
             const includeUsed = document.getElementById('includeUsedCheck').checked;
 
             const params = { 
@@ -595,13 +597,20 @@
             items.forEach((item, index) => {
                 const realIndex = isAppend ? (currentItems.length - items.length + index) : index;
                 
+                // アフィリエイトリンク生成
                 const rawSearchUrl = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(item.name)}/?s=2`;
                 const searchCheapUrl = `https://hb.afl.rakuten.co.jp/hgc/${MY_AFFILIATE_ID}/?pc=${encodeURIComponent(rawSearchUrl)}`;
 
+                // ★追加: 中古バッジの判定
+                let badgeHtml = '';
+                if (item.name.includes('中古') || item.description.includes('中古')) {
+                    badgeHtml = `<span class="badge bg-secondary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size:0.6rem; z-index:5;">中古</span>`;
+                }
+
                 const html = `
                     <div class="product-card d-flex gap-3 align-items-start">
-                        <div style="width: 100px; flex-shrink:0;">
-                            <img src="${item.imageUrl}" class="img-fluid rounded" alt="${item.name}">
+                        <div style="width: 100px; flex-shrink:0; position:relative;">
+                            ${badgeHtml} <img src="${item.imageUrl}" class="img-fluid rounded" alt="${item.name}">
                         </div>
                         <div class="flex-grow-1">
                             <h6 class="mb-1 text-truncate-2" style="font-size:0.9rem; line-height:1.4; height: 2.8em; overflow:hidden;">${item.name}</h6>
@@ -720,7 +729,7 @@
             });
         }
 
-        // 実況ローディング機能 (モード対応)
+        // 実況ローディング機能
         let loadingInterval;
         
         const loadingMessages = {

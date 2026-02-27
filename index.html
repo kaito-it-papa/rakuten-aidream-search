@@ -227,10 +227,6 @@
                         <option value="-itemPrice">高い順</option>
                         <option value="-reviewAverage">評価順</option>
                     </select>
-                    <div class="form-check form-switch m-0 d-flex align-items-center">
-                        <input class="form-check-input" type="checkbox" id="includeUsedCheck" onchange="reSort()" style="cursor:pointer;">
-                        <label class="form-check-label small ms-1 text-muted" for="includeUsedCheck" style="cursor:pointer; font-size:0.75rem;">中古も含める</label>
-                    </div>
                 </div>
             </div>
             <div id="resultCount" class="small text-muted mb-2 text-end"></div>
@@ -330,12 +326,6 @@
             });
         });
 
-        // ★追加: 中古スイッチをリセットする関数
-        function resetUsedToggle() {
-            const toggle = document.getElementById('includeUsedCheck');
-            if (toggle) toggle.checked = false;
-        }
-
         const ICON_MAP = [
             { key: "テレビ", icon: "fa-tv" }, { key: "TV", icon: "fa-tv" },
             { key: "オーディオ", icon: "fa-headphones" }, { key: "イヤホン", icon: "fa-ear-listen" },
@@ -371,8 +361,6 @@
             container.innerHTML = '';
             loading.style.display = 'block';
             
-            resetUsedToggle(); // カテゴリ読み込み時にリセット
-
             try {
                 const response = await fetch(GAS_API_URL, {
                     method: 'POST',
@@ -396,6 +384,8 @@
             const isTopLevel = (currentGenreId === 0);
 
             categories.forEach(cat => {
+                if (cat.id === currentGenreId) return;
+
                 const col = document.createElement('div'); col.className = 'col';
                 const btn = document.createElement('button'); btn.className = 'category-btn';
                 let iconHtml = '';
@@ -413,8 +403,6 @@
             const container = document.getElementById('categoryContainer');
             clearResults(); 
             container.style.opacity = 0.5;
-            
-            resetUsedToggle(); // カテゴリクリック時にリセット
             
             try {
                 const response = await fetch(GAS_API_URL, {
@@ -492,8 +480,6 @@
             const query = document.getElementById('searchInput').value;
             if (!query) return alert("キーワードを入力してください");
             
-            resetUsedToggle(); // キーワード検索時にリセット
-
             lastSearchType = 'free'; lastSearchQuery = query; lastGenreIdForSearch = null; lastAnalyzedParams = null;
             currentPage = 1;
             executeSearch('free', query);
@@ -524,17 +510,14 @@
             }
 
             const sort = document.getElementById('sortSelect').value;
-            // 中古スイッチの値を取得
-            const includeUsed = document.getElementById('includeUsedCheck').checked;
-
+            
             const params = { 
                 searchType: type, 
                 query: query, 
                 categoryId: categoryId, 
                 sort: sort, 
                 page: currentPage, 
-                existingParams: lastAnalyzedParams,
-                includeUsed: includeUsed
+                existingParams: lastAnalyzedParams
             };
 
             try {
@@ -601,7 +584,7 @@
                 const rawSearchUrl = `https://search.rakuten.co.jp/search/mall/${encodeURIComponent(item.name)}/?s=2`;
                 const searchCheapUrl = `https://hb.afl.rakuten.co.jp/hgc/${MY_AFFILIATE_ID}/?pc=${encodeURIComponent(rawSearchUrl)}`;
 
-                // ★追加: 中古バッジの判定
+                // ★中古バッジの判定（これだけは残す）
                 let badgeHtml = '';
                 if (item.name.includes('中古') || item.description.includes('中古')) {
                     badgeHtml = `<span class="badge bg-secondary position-absolute top-0 start-0 m-1 shadow-sm" style="font-size:0.6rem; z-index:5;">中古</span>`;
